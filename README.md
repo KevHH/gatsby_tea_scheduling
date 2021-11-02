@@ -1,1 +1,3 @@
-# gatsby_tea_scheduling
+# Gatsby Tea Scheduling
+
+To propose a change, make a pull request.
