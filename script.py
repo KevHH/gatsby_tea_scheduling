@@ -19,7 +19,7 @@ def get_priority_queue(past_schedule, people):
 
     # for now, all queues are ordered with least priority -> highest priority
 
-    # loop through past year"s talks from most recent to least
+    # loop through past year's talks from most recent to least
     past_schedule = sorted(past_schedule, key=lambda x: x["date"], reverse=True)
     for past_talk in past_schedule:
         # loop through presenters and add eligible people
@@ -35,7 +35,7 @@ def get_priority_queue(past_schedule, people):
             if p_id in tea_eligible_ids:
                 tea_queue.append(people_dict[p_id])
     
-    # add anyone who"s not found in the past year"s talks to the start of the queue
+    # add anyone who's not found in the past year's talks to the start of the queue
     for p_id in rt_eligible_ids:
         if p_id not in rt_queue:
             rt_queue.append(people_dict[p_id])
@@ -47,7 +47,7 @@ def get_priority_queue(past_schedule, people):
             tea_queue.append(people_dict[p_id])
     
     # finally return things with the order reversed, i.e. highest priority -> lowest priority
-    return rt_queue.reversed(), tt_queue.reversed(), tea_queue.reversed()
+    return reversed(rt_queue), reversed(tt_queue), reversed(tea_queue)
 
 def check_date_contained(talk_date, date_from_list, date_until_list):
     '''Returns a boolean signaling availability
@@ -77,7 +77,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
     '''
     # differentiate the things to be filled from things already scheduled
     to_fill_schedule = [ talk.update({"to_fill": True}) for talk in to_fill_schedule ]
-    past_schedule = [ talk.update({"to_fill": False}) for talk in to_fill_schedule ]
+    past_schedule = [ talk.update({"to_fill": False}) for talk in past_schedule ]
     # merge and sort
     merged_schedule = sorted(to_fill_schedule + past_schedule, key=lambda x: x["date"])
     
