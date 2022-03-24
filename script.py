@@ -87,7 +87,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
     # 1. Schedule research talks
     rt_queue = [ concat_dict(victim, {"taken": False}) for victim in rt_queue ]
     for i, talk in enumerate(merged_schedule):
-        if talk["to_fill"] and talk["type"] == "R":
+        if talk["to_fill"] and talk["type"] == "Research Talk":
             # schedule
             found_victim = False
             for j, victim in enumerate(rt_queue):
@@ -103,7 +103,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
     # 2. Schedule tea talks
     tt_queue = [ concat_dict(victim, {"taken": False}) for victim in tt_queue ]
     for i, talk in enumerate(merged_schedule):
-        if talk["to_fill"] and talk["type"] == "T":
+        if talk["to_fill"] and talk["type"] == "Tea Talk":
             # get a white list of ids of people to protect from duties
             whitelist = get_whitelist(talk["date"], merged_schedule)
             # schedule
