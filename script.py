@@ -98,7 +98,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
                         merged_schedule[i]["presenter"] = [victim["id"]]
                         break
             if not found_victim:
-                merged_schedule[i]["type"]["Just Tea"]
+                merged_schedule[i]["type"] = "Just Tea"
     
     # 2. Schedule tea talks
     tt_queue = [ concat_dict(victim, {"taken": False}) for victim in tt_queue ]
@@ -116,7 +116,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
                         merged_schedule[i]["presenter"] = [victim["id"]]
                         break
             if not found_victim:
-                merged_schedule[i]["type"]["Just Tea"]
+                merged_schedule[i]["type"] = "Just Tea"
 
     # 3. Schedule tea
     t_queue = [ concat_dict(victim, {"taken": False}) for victim in t_queue ]
