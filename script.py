@@ -20,7 +20,7 @@ def get_priority_queue(past_schedule, people):
     # for now, all queues are ordered with least priority -> highest priority
 
     # loop through past year"s talks from most recent to least
-    past_schedule = sorted(past_schedule, key=lambda x: x.date, reverse=True)
+    past_schedule = sorted(past_schedule, key=lambda x: x["date"], reverse=True)
     for past_talk in past_schedule:
         # loop through presenters and add eligible people
         for p_id in past_talk["presenter"]:
@@ -79,7 +79,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
     to_fill_schedule = [ talk.update({"to_fill": True}) for talk in to_fill_schedule ]
     past_schedule = [ talk.update({"to_fill": False}) for talk in to_fill_schedule ]
     # merge and sort
-    merged_schedule = sorted(to_fill_schedule + past_schedule, key=lambda x: x.date)
+    merged_schedule = sorted(to_fill_schedule + past_schedule, key=lambda x: x["date"])
     
     # 1. Schedule research talks
     rt_queue = [ victim.update({"taken":False}) for victim in rt_queue ]
