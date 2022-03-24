@@ -72,17 +72,20 @@ def get_whitelist(date, schedule, window_half_width=7):
     whitelist = list(set(presenters_in_window + tea_people_in_window))
     return whitelist
 
+def concat_dict(dict1, dict2):
+    return dict(list(dict1.items()) + list(dict2.items()))
+
 def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
     '''Returns a filled schedule that everybody *should be* happy with
     '''
     # differentiate the things to be filled from things already scheduled
-    to_fill_schedule = [ talk.update({"to_fill": True}) for talk in to_fill_schedule ]
-    past_schedule = [ talk.update({"to_fill": False}) for talk in past_schedule ]
+    to_fill_schedule = [ concat_dict(talk, {"to_fill": True}) for talk in to_fill_schedule ]
+    past_schedule = [ concat_dict(talk, {"to_fill": False}) for talk in to_fill_schedule ]
     # merge and sort
     merged_schedule = sorted(to_fill_schedule + past_schedule, key=lambda x: x["date"])
     
     # 1. Schedule research talks
-    rt_queue = [ victim.update({"taken":False}) for victim in rt_queue ]
+    rt_queue = [ concat_dict(victim, {"taken": False}) for victim in rt_queue ]
     for i, talk in enumerate(merged_schedule):
         if talk["to_fill"] and talk["type"] == "R":
             # schedule
@@ -98,7 +101,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
                 merged_schedule[i]["type"]["Just Tea"]
     
     # 2. Schedule tea talks
-    tt_queue = [ victim.update({"taken":False}) for victim in tt_queue ]
+    tt_queue = [ concat_dict(victim, {"taken": False}) for victim in tt_queue ]
     for i, talk in enumerate(merged_schedule):
         if talk["to_fill"] and talk["type"] == "T":
             # get a white list of ids of people to protect from duties
@@ -116,7 +119,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
                 merged_schedule[i]["type"]["Just Tea"]
 
     # 3. Schedule tea
-    t_queue = [ victim.update({"taken":False}) for victim in t_queue ]
+    t_queue = [ concat_dict(victim, {"taken": False}) for victim in t_queue ]
     for i, talk in enumerate(merged_schedule):
         if talk["to_fill"]:
             # get a white list of ids of people to protect from duties
