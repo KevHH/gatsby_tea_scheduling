@@ -65,9 +65,7 @@ def get_whitelist(date, schedule, window_half_width=7):
     window = [date - timedelta(days=window_half_width),  
               date + timedelta(days=window_half_width)]
     talks_in_window = filter(lambda x: check_date_contained(x["date"], [window[0]], [window[1]]), schedule)
-    presenters_in_window = [person_id for talk in talks_in_window for person_id in talk['presenter']]
-    tea_people_in_window = [person_id for talk in talks_in_window for person_id in talk['tea']]
-    whitelist = list(set(presenters_in_window + tea_people_in_window))
+    whitelist = [person_id for talk in talks_in_window for person_id in talk['presenter']]
     return whitelist
 
 def concat_dict(dict1, dict2):
