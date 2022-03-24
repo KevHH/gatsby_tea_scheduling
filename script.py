@@ -11,11 +11,11 @@ def get_priority_queue(past_schedule, people):
     # rt=research talk, tt=tea talk, t=tea
     rt_queue = []
     tt_queue = []
-    t_queue = []
+    tea_queue = []
 
     rt_eligible_ids = [ victim["id"] for victim in people if victim["rt_excluded"] == False]
     tt_eligible_ids = [ victim["id"] for victim in people if victim["tt_excluded"] == False]
-    t_eligible_ids = [ victim["id"] for victim in people if victim["t_excluded"] == False]
+    tea_eligible_ids = [ victim["id"] for victim in people if victim["tea_excluded"] == False]
 
     # for now, all queues are ordered with least priority -> highest priority
 
@@ -32,8 +32,8 @@ def get_priority_queue(past_schedule, people):
 
         # loop through tea people and add eligible people
         for p_id in past_talk["tea"]:
-            if p_id in t_eligible_ids:
-                t_queue.append(people_dict[p_id])
+            if p_id in tea_eligible_ids:
+                tea_queue.append(people_dict[p_id])
     
     # add anyone who"s not found in the past year"s talks to the start of the queue
     for p_id in rt_eligible_ids:
@@ -42,12 +42,12 @@ def get_priority_queue(past_schedule, people):
     for p_id in tt_eligible_ids:
         if p_id not in tt_queue:
             tt_queue.append(people_dict[p_id])
-    for p_id in t_eligible_ids:
-        if p_id not in t_queue:
-            t_queue.append(people_dict[p_id])
+    for p_id in tea_eligible_ids:
+        if p_id not in tea_queue:
+            tea_queue.append(people_dict[p_id])
     
     # finally return things with the order reversed, i.e. highest priority -> lowest priority
-    return rt_queue.reversed(), tt_queue.reversed(), t_queue.reversed()
+    return rt_queue.reversed(), tt_queue.reversed(), tea_queue.reversed()
 
 def check_date_contained(talk_date, date_from_list, date_until_list):
     '''Returns a boolean signaling availability
