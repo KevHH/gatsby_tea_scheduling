@@ -47,7 +47,7 @@ def get_priority_queue(past_schedule, people):
             tea_queue.append(people_dict[p_id])
     
     # finally return things with the order reversed, i.e. highest priority -> lowest priority
-    return reversed(rt_queue), reversed(tt_queue), reversed(tea_queue)
+    return list(reversed(rt_queue)), list(reversed(tt_queue)), list(reversed(tea_queue))
 
 def check_date_contained(talk_date, date_from_list, date_until_list):
     '''Returns a boolean signaling availability
