@@ -65,7 +65,7 @@ def get_whitelist(date, schedule, window_half_width=7):
     window = [date - timedelta(days=window_half_width),  
               date + timedelta(days=window_half_width)]
     talks_in_window = filter(lambda x: (not x["to_fill"]) and 
-                                      check_date_contained([window[0]], [window[1]], x["date"]), 
+                                      check_date_contained(x["date"], [window[0]], [window[1]]), 
                             schedule)
     presenters_in_window = [person_id for talk in talks_in_window for person_id in talk['presenter']]
     tea_people_in_window = [person_id for talk in talks_in_window for person_id in talk['tea']]
@@ -110,7 +110,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
             found_victim = False
             for j, victim in enumerate(tt_queue):
                 if (not victim["taken"]) and (victim["id"] not in whitelist):
-                    if check_date_contained(victim["away_from"], victim["away_until"], talk["date"]):
+                    if check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
                         found_victim = True
                         tt_queue[j]["taken"] = True
                         merged_schedule[i]["presenter"] = [victim["id"]]
@@ -128,7 +128,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
             found_victim = False
             for j, victim in enumerate(t_queue):
                 if (not victim["taken"]) and (victim["id"] not in whitelist):
-                    if check_date_contained(victim["away_from"], victim["away_until"], talk["date"]):
+                    if check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
                         found_victim = True
                         t_queue[j]["taken"] = True
                         merged_schedule[i]["tea"] = [victim["id"]]
