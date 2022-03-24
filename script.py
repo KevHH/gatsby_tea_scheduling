@@ -80,7 +80,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
     '''
     # differentiate the things to be filled from things already scheduled
     to_fill_schedule = [ concat_dict(talk, {"to_fill": True}) for talk in to_fill_schedule ]
-    past_schedule = [ concat_dict(talk, {"to_fill": False}) for talk in to_fill_schedule ]
+    past_schedule = [ concat_dict(talk, {"to_fill": False}) for talk in past_schedule ]
     # merge and sort
     merged_schedule = sorted(to_fill_schedule + past_schedule, key=lambda x: x["date"])
     
