@@ -65,7 +65,7 @@ def get_whitelist(date, schedule, window_half_width=7):
     window = [date - timedelta(days=window_half_width),  
               date + timedelta(days=window_half_width)]
     talks_in_window = filter(lambda x: (not x["to_fill"]) and 
-                                      check_date_contained(window[0], window[1], x["date"]), 
+                                      check_date_contained([window[0]], [window[1]], x["date"]), 
                             schedule)
     presenters_in_window = [person_id for talk in talks_in_window for person_id in talk['presenter']]
     tea_people_in_window = [person_id for talk in talks_in_window for person_id in talk['tea']]
