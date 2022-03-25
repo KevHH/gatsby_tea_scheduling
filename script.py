@@ -24,15 +24,15 @@ def get_priority_queue(past_schedule, people):
     for past_talk in past_schedule:
         # loop through presenters and add eligible people
         for p_id in past_talk["presenter"]:
-            if p_id in rt_eligible_ids and past_talk["type"] == "R":
+            if p_id not in rt_queue and p_id in rt_eligible_ids and past_talk["type"] == "R":
                 rt_queue.append(people_dict[p_id])
-            elif p_id in tt_eligible_ids and past_talk["type"] == "T":
+            elif p_id not in tt_queue and p_id in tt_eligible_ids and past_talk["type"] == "T":
                 tt_queue.append(people_dict[p_id])
             # skip talk types that are neither because no way to know what that is
 
         # loop through tea people and add eligible people
         for p_id in past_talk["tea"]:
-            if p_id in tea_eligible_ids:
+            if p_id not in tea_queue and p_id in tea_eligible_ids:
                 tea_queue.append(people_dict[p_id])
     
     # add anyone who's not found in the past year's talks to the start of the queue
