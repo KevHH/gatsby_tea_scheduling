@@ -54,13 +54,13 @@ def get_priority_queue(past_schedule, people):
     return rt_queue_processed, tt_queue_processed, tea_queue_processed
 
 def check_date_contained(talk_date, date_from_list, date_until_list):
-    '''Returns a boolean signaling availability
+    '''Returns a boolean signaling whether the date is contained in any interval in the list
     '''
     for i in range( min( len(date_from_list), len(date_until_list) ) ):
         # if talk date is contained within any date window, return false
         if date_from_list[i] <= talk_date and talk_date <= date_until_list[i]:
-            return False
-    return True 
+            return True
+    return False 
 
 def get_whitelist(date, schedule, window_half_width=7):
     '''Get ids of people that should not be scheduled for duties because of existing duties in the given time window
