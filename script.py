@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-tea_tzar_id = "2e48529ac48349468f4ed5eeb8f4c821" # Kevin's id; fallback when no one is available for tea duty
+tea_tzar_id = "2e48529a-c483-4946-8f4e-d5eeb8f4c821" # Kevin's id; fallback when no one is available for tea duty
 
 def get_priority_queue(past_schedule, people):
     '''Returns priority queues of people to be scheduled duties for research talk, tea talk and tea    
@@ -75,7 +75,7 @@ def get_whitelist(date, schedule, window_half_width=7):
 def concat_dict(dict1, dict2):
     return dict(list(dict1.items()) + list(dict2.items()))
 
-def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
+def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, tea_queue):
     '''Returns a filled schedule that everybody *should be* happy with
     '''
     # differentiate the things to be filled from things already scheduled
@@ -119,18 +119,18 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue):
                 merged_schedule[i]["type"] = "Just Tea"
 
     # 3. Schedule tea
-    t_queue = [ concat_dict(victim, {"taken": False}) for victim in t_queue ]
+    tea_queue = [ concat_dict(victim, {"taken": False}) for victim in tea_queue ]
     for i, talk in enumerate(merged_schedule):
         if talk["to_fill"]:
             # get a white list of ids of people to protect from duties
             whitelist = get_whitelist(talk["date"], merged_schedule)
             # schedule
             found_victim = False
-            for j, victim in enumerate(t_queue):
+            for j, victim in enumerate(tea_queue):
                 if (not victim["taken"]) and (victim["id"] not in whitelist):
                     if check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
                         found_victim = True
-                        t_queue[j]["taken"] = True
+                        tea_queue[j]["taken"] = True
                         merged_schedule[i]["tea"] = [victim["id"]]
                         break
             if not found_victim:
@@ -175,9 +175,9 @@ def main(to_fill_schedule, past_schedule, people):
     '''
 
     # get priority queues for each of research talk, tea talk and tea
-    rt_queue, tt_queue, t_queue = get_priority_queue(past_schedule, people)
+    rt_queue, tt_queue, tea_queue = get_priority_queue(past_schedule, people)
 
     # schedule
-    filled_schedule = fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, t_queue)
+    filled_schedule = fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, tea_queue)
 
     return filled_schedule
