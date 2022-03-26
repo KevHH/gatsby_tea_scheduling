@@ -21,9 +21,9 @@ def get_priority_queue(past_schedule, people):
     for past_talk in past_schedule:
         # loop through presenters and add eligible people
         for p_id in past_talk["presenter"]:
-            if p_id not in rt_queue and p_id in rt_eligible_ids and past_talk["type"] == "R":
+            if p_id not in rt_queue and p_id in rt_eligible_ids and past_talk["type"] == "Research Talk":
                 rt_queue.append(p_id)
-            elif p_id not in tt_queue and p_id in tt_eligible_ids and past_talk["type"] == "T":
+            elif p_id not in tt_queue and p_id in tt_eligible_ids and past_talk["type"] == "Tea Talk":
                 tt_queue.append(p_id)
             # skip talk types that are neither because no way to know what that is
 
@@ -147,11 +147,11 @@ def main(to_fill_schedule, past_schedule, people):
     ----------
     to_fill_schedule : list of dictionaries with the following keys
         "date": datetime.datetime object representing date of the talk
-        "type": either "R" or "T" representing research talk or tea talk
+        "type": either "Research Talk" or "Tea Talk" representing research talk or tea talk; "Just Tea" for no talk
         "id": string, representing notion id of the talk
     past_schedule : list of dictionaries with the following keys, containing talks from the past year
         "date": datetime.datetime object representing date of the talk
-        "type": either "R" or "T" representing research talk or tea talk
+        "type": either "Research Talk" or "Tea Talk" representing research talk or tea talk; "Just Tea" for no talk
         "id": string, representing notion id of the talk
         "presenter": list of strings, representing ids of the presenters
         "tea": list of strings, representing ids of the tea people
@@ -168,7 +168,7 @@ def main(to_fill_schedule, past_schedule, people):
     -------
     filled_schedule: list of dictionaries with the following keys
         "date": datetime.datetime object representing date of the talk
-        "type": either "R" or "T" representing research talk or tea talk
+        "type": either "Research Talk" or "Tea Talk" representing research talk or tea talk; "Just Tea" for no talk
         "id": string, representing notion id of the talk
         "presenter": notion id for the person presenting
         "tea": notion id for the person doing tea preparation
