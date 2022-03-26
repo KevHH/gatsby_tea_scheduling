@@ -92,7 +92,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, tea_queue
             found_victim = False
             for j, victim in enumerate(rt_queue):
                 if not victim["taken"]:
-                    if check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
+                    if not check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
                         found_victim = True
                         rt_queue[j]["taken"] = True
                         merged_schedule[i]["presenter"] = [victim["id"]]
@@ -110,7 +110,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, tea_queue
             found_victim = False
             for j, victim in enumerate(tt_queue):
                 if (not victim["taken"]) and (victim["id"] not in whitelist):
-                    if check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
+                    if not check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
                         found_victim = True
                         tt_queue[j]["taken"] = True
                         merged_schedule[i]["presenter"] = [victim["id"]]
@@ -128,7 +128,7 @@ def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, tea_queue
             found_victim = False
             for j, victim in enumerate(tea_queue):
                 if (not victim["taken"]) and (victim["id"] not in whitelist):
-                    if check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
+                    if not check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
                         found_victim = True
                         tea_queue[j]["taken"] = True
                         merged_schedule[i]["tea"] = [victim["id"]]
