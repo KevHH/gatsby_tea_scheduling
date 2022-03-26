@@ -5,9 +5,6 @@ tea_tzar_id = "2e48529ac48349468f4ed5eeb8f4c821" # Kevin's id; fallback when no 
 def get_priority_queue(past_schedule, people):
     '''Returns priority queues of people to be scheduled duties for research talk, tea talk and tea    
     '''
-    # convert people list to a dictionary of id->victim
-    people_dict = { victim["id"]:victim for victim in people}
-
     # rt=research talk, tt=tea talk, t=tea
     rt_queue = []
     tt_queue = []
@@ -25,29 +22,36 @@ def get_priority_queue(past_schedule, people):
         # loop through presenters and add eligible people
         for p_id in past_talk["presenter"]:
             if p_id not in rt_queue and p_id in rt_eligible_ids and past_talk["type"] == "R":
-                rt_queue.append(people_dict[p_id])
+                rt_queue.append(p_id)
             elif p_id not in tt_queue and p_id in tt_eligible_ids and past_talk["type"] == "T":
-                tt_queue.append(people_dict[p_id])
+                tt_queue.append(p_id)
             # skip talk types that are neither because no way to know what that is
 
         # loop through tea people and add eligible people
         for p_id in past_talk["tea"]:
             if p_id not in tea_queue and p_id in tea_eligible_ids:
-                tea_queue.append(people_dict[p_id])
+                tea_queue.append(p_id)
     
     # add anyone who's not found in the past year's talks to the start of the queue
     for p_id in rt_eligible_ids:
         if p_id not in rt_queue:
-            rt_queue.append(people_dict[p_id])
+            rt_queue.append(p_id)
     for p_id in tt_eligible_ids:
         if p_id not in tt_queue:
-            tt_queue.append(people_dict[p_id])
+            tt_queue.append(p_id)
     for p_id in tea_eligible_ids:
         if p_id not in tea_queue:
-            tea_queue.append(people_dict[p_id])
+            tea_queue.append(p_id)
+            
+    # convert people list to a dictionary of id->victim
+    people_dict = { victim["id"]:victim for victim in people}
     
-    # finally return things with the order reversed, i.e. highest priority -> lowest priority
-    return list(reversed(rt_queue)), list(reversed(tt_queue)), list(reversed(tea_queue))
+    # reverse order of ids, i.e. highest priority -> lowest priority, and then replace ids with people
+    rt_queue_processed = [ people_dict[p_id] for p_id in reversed(rt_queue)]
+    tt_queue_processed = [ people_dict[p_id] for p_id in reversed(tt_queue)]
+    tea_queue_processed = [ people_dict[p_id] for p_id in reversed(tea_queue)]
+
+    return rt_queue_processed, tt_queue_processed, tea_queue_processed
 
 def check_date_contained(talk_date, date_from_list, date_until_list):
     '''Returns a boolean signaling availability
