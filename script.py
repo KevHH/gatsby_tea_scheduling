@@ -1,57 +1,52 @@
 from datetime import timedelta
 
-tea_tzar_id = "2e48529a-c483-4946-8f4e-d5eeb8f4c821" # Kevin's id; fallback when no one is available for tea duty
+slot_to_duty = {
+    "Research Talk": "presenter",
+    "Tea Talk": "presenter",
+    "Tea": "tea",
+    "MLJC": "presenter",
+    "TNJC": "presenter",
+    "Coffee Cleaning": "tea"
+}
 
-def get_priority_queue(past_schedule, people):
+slot_to_talk_types = {
+    "Research Talk": ["Research Talk"],
+    "Tea Talk": ["Tea Talk"],
+    "Tea": ["Research Talk", "Tea Talk", "Just Tea", "Leaving Tea", "External Seminar"],
+    "MLJC": ["MLJC"],
+    "TNJC": ["TNJC"],
+    "Coffee Cleaning": ["Cleaning"]
+}
+
+def get_priority_queue(past_schedule, people, eligible_ids, slot_type):
     '''Returns priority queues of people to be scheduled duties for research talk, tea talk and tea    
+
+        slot_type only allowed to take one of these values: "Research Talk", "Tea Talk", "Tea", "MLJC", "TNJC", "Coffee Cleaning"
     '''
-    # rt=research talk, tt=tea talk, t=tea
-    rt_queue = []
-    tt_queue = []
-    tea_queue = []
+    queue = []
+    talk_types_to_consider = slot_to_talk_types[slot_type]
+    duty_type = slot_to_duty[slot_type]
 
-    rt_eligible_ids = [ victim["id"] for victim in people if victim["rt_excluded"] == False]
-    tt_eligible_ids = [ victim["id"] for victim in people if victim["tt_excluded"] == False]
-    tea_eligible_ids = [ victim["id"] for victim in people if victim["tea_excluded"] == False]
-
-    # for now, all queues are ordered with least priority -> highest priority
-
-    # loop through past year's talks from most recent to least
+    # loop through past year's talks from most recent to least; for now, the queue is ordered with least priority -> highest priority
     past_schedule = sorted(past_schedule, key=lambda x: x["date"], reverse=True)
     for past_talk in past_schedule:
         # loop through presenters and add eligible people
-        for p_id in past_talk["presenter"]:
-            if p_id not in rt_queue and p_id in rt_eligible_ids and past_talk["type"] == "Research Talk":
-                rt_queue.append(p_id)
-            elif p_id not in tt_queue and p_id in tt_eligible_ids and past_talk["type"] == "Tea Talk":
-                tt_queue.append(p_id)
-            # skip talk types that are neither because no way to know what that is
-
-        # loop through tea people and add eligible people
-        for p_id in past_talk["tea"]:
-            if p_id not in tea_queue and p_id in tea_eligible_ids:
-                tea_queue.append(p_id)
+        for p_id in past_talk[duty_type]:
+            if p_id not in queue and p_id in eligible_ids and past_talk["type"] in talk_types_to_consider:
+                queue.append(p_id)
     
     # add anyone who's not found in the past year's talks to the start of the queue
-    for p_id in rt_eligible_ids:
-        if p_id not in rt_queue:
-            rt_queue.append(p_id)
-    for p_id in tt_eligible_ids:
-        if p_id not in tt_queue:
-            tt_queue.append(p_id)
-    for p_id in tea_eligible_ids:
-        if p_id not in tea_queue:
-            tea_queue.append(p_id)
+    for p_id in eligible_ids:
+        if p_id not in queue:
+            queue.append(p_id)
             
     # convert people list to a dictionary of id->victim
     people_dict = { victim["id"]:victim for victim in people}
     
     # reverse order of ids, i.e. highest priority -> lowest priority, and then replace ids with people
-    rt_queue_processed = [ people_dict[p_id] for p_id in reversed(rt_queue)]
-    tt_queue_processed = [ people_dict[p_id] for p_id in reversed(tt_queue)]
-    tea_queue_processed = [ people_dict[p_id] for p_id in reversed(tea_queue)]
+    queue_processed = [ people_dict[p_id] for p_id in reversed(queue)]
 
-    return rt_queue_processed, tt_queue_processed, tea_queue_processed
+    return queue_processed
 
 def check_date_contained(talk_date, date_from_list, date_until_list):
     '''Returns a boolean signaling whether the date is contained in any interval in the list
@@ -75,72 +70,35 @@ def get_whitelist(date, schedule, window_half_width=7):
 def concat_dict(dict1, dict2):
     return dict(list(dict1.items()) + list(dict2.items()))
 
-def fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, tea_queue):
+def fill_schedule(schedule, queue, slot_type):
     '''Returns a filled schedule that everybody *should be* happy with
+        
+       slot_type only allowed to take one of these values: "Research Talk", "Tea Talk", "Tea", "MLJC", "TNJC", "Coffee Cleaning"
     '''
-    # differentiate the things to be filled from things already scheduled
-    to_fill_schedule = [ concat_dict(talk, {"to_fill": True}) for talk in to_fill_schedule ]
-    past_schedule = [ concat_dict(talk, {"to_fill": False}) for talk in past_schedule ]
-    # merge and sort
-    merged_schedule = sorted(to_fill_schedule + past_schedule, key=lambda x: x["date"])
-    
+    talk_types_to_consider = slot_to_talk_types[slot_type]
+    duty_type = slot_to_duty[slot_type]
+
     # 1. Schedule research talks
-    rt_queue = [ concat_dict(victim, {"taken": False}) for victim in rt_queue ]
-    for i, talk in enumerate(merged_schedule):
-        if talk["to_fill"] and talk["type"] == "Research Talk":
-            # schedule
-            found_victim = False
-            for j, victim in enumerate(rt_queue):
-                if not victim["taken"]:
-                    if not check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
-                        found_victim = True
-                        rt_queue[j]["taken"] = True
-                        merged_schedule[i]["presenter"] = [victim["id"]]
-                        break
-            if not found_victim:
-                merged_schedule[i]["type"] = "Just Tea"
-    
-    # 2. Schedule tea talks
-    tt_queue = [ concat_dict(victim, {"taken": False}) for victim in tt_queue ]
-    for i, talk in enumerate(merged_schedule):
-        if talk["to_fill"] and talk["type"] == "Tea Talk":
+    queue = [ concat_dict(victim, {"taken": False}) for victim in queue ]
+    for i, talk in enumerate(schedule):
+        if talk["to_fill"] and talk["type"] in talk_types_to_consider:
             # get a white list of ids of people to protect from duties
-            whitelist = get_whitelist(talk["date"], merged_schedule)
+            whitelist = get_whitelist(talk["date"], schedule)
             # schedule
             found_victim = False
-            for j, victim in enumerate(tt_queue):
+            for j, victim in enumerate(queue):
                 if (not victim["taken"]) and (victim["id"] not in whitelist):
                     if not check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
                         found_victim = True
-                        tt_queue[j]["taken"] = True
-                        merged_schedule[i]["presenter"] = [victim["id"]]
+                        queue[j]["taken"] = True
+                        schedule[i][duty_type] = [victim["id"]]
                         break
-            if not found_victim:
-                merged_schedule[i]["type"] = "Just Tea"
+            if not found_victim and (slot_type == "Research Talk" or slot_type == "Tea Talk"):
+                schedule[i]["type"] = "Just Tea"
 
-    # 3. Schedule tea
-    tea_queue = [ concat_dict(victim, {"taken": False}) for victim in tea_queue ]
-    for i, talk in enumerate(merged_schedule):
-        if talk["to_fill"]:
-            # get a white list of ids of people to protect from duties
-            whitelist = get_whitelist(talk["date"], merged_schedule)
-            # schedule
-            found_victim = False
-            for j, victim in enumerate(tea_queue):
-                if (not victim["taken"]) and (victim["id"] not in whitelist):
-                    if not check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
-                        found_victim = True
-                        tea_queue[j]["taken"] = True
-                        merged_schedule[i]["tea"] = [victim["id"]]
-                        break
-            if not found_victim:
-                merged_schedule[i]["tea"] = [tea_tzar_id]
+    return schedule
 
-    # sieve out schedule that was filled
-    filled_schedule = [ talk for talk in merged_schedule if talk["to_fill"] ]
-    return filled_schedule
-
-def main(to_fill_schedule, past_schedule, people):
+def main(to_fill_schedule, past_schedule, people, query):
     '''Returns a schedule for research and tea talks
 
     Parameters
@@ -163,6 +121,11 @@ def main(to_fill_schedule, past_schedule, people):
         "tea_excluded": boolean indicating whether the person is excluded from tea
         "tt_excluded": boolean indicating whether the person is excluded from tea talk
         "rt_excluded": boolean indicating whether the person is excluded from research talk
+    query : string indicating the type of scheduling query. Only one of the following values is allowed:
+        "ResearchTeaTalks": scheduling research talks, tea talks and tea
+        "MLJC": scheduling MLJC
+        "TNJC": scheduling TNJC
+        "Coffee Cleaning": scheduling coffee
 
     Returns
     -------
@@ -174,10 +137,39 @@ def main(to_fill_schedule, past_schedule, people):
         "tea": notion id for the person doing tea preparation
     '''
 
+    if query not in ["ResearchTeaTalks", "MLJC", "TNJC", "Coffee Cleaning"]: 
+        print('Invalid query sent to scheduling script')
+        return 
+
+    # differentiate the things to be filled from things already scheduled
+    to_fill_schedule = [ concat_dict(talk, {"to_fill": True}) for talk in to_fill_schedule ]
+    past_schedule = [ concat_dict(talk, {"to_fill": False}) for talk in past_schedule ]
+    # merge and sort
+    schedule = sorted(to_fill_schedule + past_schedule, key=lambda x: x["date"])
+
     # get priority queues for each of research talk, tea talk and tea
-    rt_queue, tt_queue, tea_queue = get_priority_queue(past_schedule, people)
+    if query == 'ResearchTeaTalks':
+        rt_queue = get_priority_queue(past_schedule, people, 
+                                         [ victim["id"] for victim in people if victim["rt_excluded"] == False], 
+                                      "Research Talk")
+        tt_queue = get_priority_queue(past_schedule, people, 
+                                         [ victim["id"] for victim in people if victim["tt_excluded"] == False], 
+                                      "Tea Talk")
+        tea_queue = get_priority_queue(past_schedule, people, 
+                                         [ victim["id"] for victim in people if victim["tea_excluded"] == False], 
+                                       "Tea")
+        
+        schedule = fill_schedule(schedule, rt_queue, "Research Talk")
+        schedule = fill_schedule(schedule, tt_queue, "Tea Talk")
+        schedule = fill_schedule(schedule, tea_queue, "Tea")
+        
+        filled_schedule = [ talk for talk in schedule if talk["to_fill"] ]
+        return filled_schedule
+    
+    else: # handles MLJC, TNJC, Coffee Cleaning
+        queue = get_priority_queue(past_schedule, people, [ victim["id"] for victim in people], query)
+        schedule = fill_schedule(schedule, queue, query)
 
-    # schedule
-    filled_schedule = fill_schedule(to_fill_schedule, past_schedule, rt_queue, tt_queue, tea_queue)
+        filled_schedule = [ talk for talk in schedule if talk["to_fill"] ]
+        return filled_schedule
 
-    return filled_schedule
