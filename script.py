@@ -105,11 +105,11 @@ def main(to_fill_schedule, past_schedule, people, query):
     ----------
     to_fill_schedule : list of dictionaries with the following keys
         "date": datetime.datetime object representing date of the talk
-        "type": either "Research Talk" or "Tea Talk" representing research talk or tea talk; "Just Tea" for no talk
+        "type": type of talk / duty
         "id": string, representing notion id of the talk
     past_schedule : list of dictionaries with the following keys, containing talks from the past year
         "date": datetime.datetime object representing date of the talk
-        "type": either "Research Talk" or "Tea Talk" representing research talk or tea talk; "Just Tea" for no talk
+        "type": type of talk / dut
         "id": string, representing notion id of the talk
         "presenter": list of strings, representing ids of the presenters
         "tea": list of strings, representing ids of the tea people
