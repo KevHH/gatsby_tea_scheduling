@@ -48,13 +48,14 @@ def get_priority_queue(past_schedule, people, eligible_ids, slot_type):
 
     return queue_processed
 
-def check_date_contained(talk_date, date_from_list, date_until_list):
+def check_date_overlap(talk_date, talk_date_end, date_from_list, date_until_list):
     '''Returns a boolean signaling whether the date is contained in any interval in the list
     '''
-    for i in range( min( len(date_from_list), len(date_until_list) ) ):
-        # if talk date is contained within any date window, return false
-        if date_from_list[i] <= talk_date and talk_date <= date_until_list[i]:
-            return True
+    for single_date in [talk_date + timedelta(n) for n in range(int((talk_date_end - talk_date).days) + 1)]:
+        for i in range( min( len(date_from_list), len(date_until_list) ) ):
+            # if talk date is contained within any date window, return true
+            if date_from_list[i] <= single_date and single_date <= date_until_list[i]:
+                return True
     return False 
 
 def get_whitelist(date, schedule, window_half_width=7):
@@ -63,7 +64,7 @@ def get_whitelist(date, schedule, window_half_width=7):
     # provide a protection window for recent talk presenters
     window = [date - timedelta(days=window_half_width),  
               date + timedelta(days=window_half_width)]
-    talks_in_window = filter(lambda x: check_date_contained(x["date"], [window[0]], [window[1]]), schedule)
+    talks_in_window = filter(lambda x: check_date_overlap(x["date"], x["date"], [window[0]], [window[1]]), schedule)
     whitelist = [person_id for talk in talks_in_window for person_id in talk['presenter']]
     return whitelist
 
@@ -88,7 +89,12 @@ def fill_schedule(schedule, queue, slot_type):
             found_victim = False
             for j, victim in enumerate(queue):
                 if (not victim["taken"]) and (victim["id"] not in whitelist):
-                    if not check_date_contained(talk["date"], victim["away_from"], victim["away_until"]):
+                    # if "date_end" is specified (typical for coffee cleaning), check for overlap between two periods
+                    if "date_end" not in talk:
+                        talk_date_end = talk["date"]
+                    else:
+                        talk_date_end = talk["date_end"]
+                    if not check_date_overlap(talk["date"], talk_date_end, victim["away_from"], victim["away_until"]):
                         found_victim = True
                         queue[j]["taken"] = True
                         schedule[i][duty_type] = [victim["id"]]
@@ -113,6 +119,7 @@ def main(to_fill_schedule, past_schedule, people, query):
         "id": string, representing notion id of the talk
         "presenter": list of strings, representing ids of the presenters
         "tea": list of strings, representing ids of the tea people
+        "date_end" (optional): datetime.datetime object representing end date of the talk / duty, if different from "date" (typically only for coffee cleaning, which lasts for the entire week )
     people : list of dictionaries with the following keys, containing people eligible to schedule talks for
         "id": string, representing notion id of the person
         "away_from": list of datetime.datetime objects representing start of away dates (inclusive)
