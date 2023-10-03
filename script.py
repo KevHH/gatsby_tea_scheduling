@@ -15,7 +15,7 @@ slot_to_talk_types = {
     "Tea": ["Research Talk", "Tea Talk", "Just Tea", "Leaving Tea", "External Seminar"],
     "MLJC": ["MLJC"],
     "TNJC": ["TNJC"],
-    "Coffee Cleaning": ["Cleaning"]
+    "Coffee Cleaning": ["Coffee Cleaning"]
 }
 
 def get_priority_queue(past_schedule, people, eligible_ids, slot_type):
