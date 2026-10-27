@@ -1,3 +1,3 @@
 # Gatsby Tea Scheduling
 
-To propose a change, make a pull request.
+This repository has been superceded by a new repo [here](github.com/GatsbyUnit/gatsby-teabot) and will no longer be maintained.
